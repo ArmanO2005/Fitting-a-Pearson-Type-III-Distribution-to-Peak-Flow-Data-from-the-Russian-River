@@ -38,8 +38,18 @@ class Data_Utils:
             basin_df['mav'] = basin_df[basin].rolling(window=7, min_periods=7).mean()
 
             min_flows = basin_df.groupby('water_year')["mav"].min().reset_index()
-            min_flows.to_csv(f'russian_river_low_flows/{basin.split()[0]}.csv')
+            min_flows.to_csv(f'russian_river_low_flows(7d-avg)/{basin.split()[0]}.csv')
 
+    def Get_N_Day_Avg_Maximums(self, N):
+        """Returns a dict of N-day max flow dataframes for all basins, indexed by basin name."""
+        for basin in self.data.keys():
+            basin_df = self.data[basin][['Date', basin]]
+            basin_df['Date'] = pd.to_datetime(basin_df['Date'])
+            basin_df['water_year'] = np.where(basin_df['Date'].dt.month >= 10, basin_df['Date'].dt.year + 1, basin_df['Date'].dt.year)
+            basin_df['mav'] = basin_df[basin].rolling(window=7, min_periods=7).mean()
+
+            max_flows = basin_df.groupby('water_year')["mav"].max().reset_index()
+            max_flows.to_csv(f'russian_river_peak_flows(7d-avg)/{basin.split()[0]}.csv')
         
     
 
@@ -47,3 +57,4 @@ x = Data_Utils()
 x.load_data()
 x.Get_Peak_Flows()
 x.Get_N_Day_Avg_Minimums(7)
+x.Get_N_Day_Avg_Maximums(7)
